@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+{% block content %}
+<div id="main-wrap" class="is2d">
+    <main class="lobby">
+        <div class="lobby__table">
+            <div class="game-setup" style="padding-top: 100px">
+                <div id="modal-wrap">
+                    <div>
+                        <h2>Create a game</h2>
+                        <form method="post" action="/create">
+                            <div class="time_mode_config optional_config">
+                                <label for="time-controls">Choose a time a control:</label>
+                                <select name="time-control" id="time-controls">
+                                    <option value="1,0">1 + 0 | Bullet</option>
+                                    <option value="2,1">2 + 1 | Bullet</option>
+                                    <option value="3,0">3 + 0 | Blitz</option>
+                                    <option value="3,2">3 + 2 | Blitz</option>
+                                    <option value="5,0">5 + 0 | Blitz</option>
+                                    <option value="5,3">5 + 3 | Blitz</option>
+                                    <option value="10,0">10 + 0 | Rapid</option>
+                                </select>
+                            </div>
+                            <div class="color-submits">
+                                <button type="submit" title="Create" class="color-submits__button button button-metal random">Create</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="lobby__app">
+            <div class="lobby__app__content">
+                <table class="hooks__list">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Host</th>
+                            <th>Rating</th>
+                            <th>Time</th>
+                            <th>Room</th>
+                            <th>Join/Spectate</th>
+                        </tr>
+                    </thead>
+                    <tbody class="">
+                        {% for game in games %}
+                        {% if game.players() == 4 %}
+                        <tr class="hook join disabled" title="Spectate the game">
+                            <td><span class="is is2 color-icon random"></span></td>
+                            <td>{{ game.host }}</td>
+                            <td>1500</td>
+                            <td>{{ game.time_main }} + {{ game.time_increment }}</td>
+                            <td>{{ game.players() }} / 4</td>
+                            <td><a href="/game/{{ game.key }}" class="button button-empty">Spectate</a></td>
+                        </tr>
+                        {% else %}
+                        <tr class="hook join" title="Join the game">
+                            <td><span class="is is2 color-icon random"></span></td>
+                            <td>{{ game.host }}</td>
+                            <td>1500</td>
+                            <td>{{ game.time_main }} + {{ game.time_increment }}</td>
+                            <td>{{ game.players() }} / 4</td>
+                            <td><a href="/game/{{ game.key }}" class="button button-empty">Join</a></td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="lobby__side">
+            <div class="about-side" style="width: auto">
+                Libaby is a free, libre, no-ads, open source chess server. <a href="/about">About Libaby...</a>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

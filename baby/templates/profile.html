@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block content %}
+<div id="main-wrap" class="is2d">
+    <main class="page-menu">
+        <div class="page-menu__content box user-show">
+            <div class="box__top user-show__header">
+                <h1><span class="online user-link"><i class="line"></i>{{ current_user.username }}</span></h1>
+                <div class="trophies">
+                    <a href="/logout" class="signin button button-empty">Log out</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
