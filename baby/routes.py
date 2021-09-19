@@ -60,10 +60,13 @@ def logout():
     return redirect(url_for("home"))
 
 
-@app.route("/profile")
-@login_required
-def profile():
-    return render_template("profile.html", title="Profile")
+@app.route("/@/<string:username>")
+def profile(username):
+    user = User.query.filter_by(username=username).first()
+    if user:
+        return render_template("profile.html", title="Profile", user=user)
+    else:
+        return redirect(url_for("home"))
 
 
 @app.route("/about")
@@ -84,14 +87,15 @@ def settings():
 @app.route("/create", methods=["POST"])
 @login_required
 def create():
-    print(request.form)
-    time_main, time_increment = map(int, request.form["time-control"].split(","))
-    random_key = "".join([choice(chars) for _ in range(8)])
-    new_game = Game(time_main=time_main, time_increment=time_increment, key=random_key)
-    db.session.add(new_game)
-    current_user.game = new_game
-    db.session.commit()
-    print(current_user.game)
+    if current_user.game is None:
+        print(request.form)
+        time_main, time_increment = map(int, request.form["time-control"].split(","))
+        random_key = "".join([choice(chars) for _ in range(8)])
+        new_game = Game(time_main=time_main, time_increment=time_increment, key=random_key)
+        db.session.add(new_game)
+        current_user.game = new_game
+        db.session.commit()
+        print(current_user.game)
     return redirect(url_for("home"))
 
 
@@ -99,7 +103,7 @@ def create():
 @login_required
 def game(key):
     g = Game.query.filter_by(key=key).first()
-    if g is None or g.is_full():
+    if g is None or g.is_full() or current_user not in g.players:
         return redirect(url_for("home"))
     else:
         current_user.game_id = g.id

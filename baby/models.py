@@ -43,3 +43,6 @@ class Game(db.Model):
     def creator(self):
         if self.count_players():
             return self.players[0]
+
+    def playing(self):
+        return ", ".join([i.username for i in self.players])

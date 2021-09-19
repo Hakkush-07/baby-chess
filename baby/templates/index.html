@@ -34,7 +34,7 @@
                     <thead>
                         <tr>
                             <th></th>
-                            <th>Created by</th>
+                            <th>Players</th>
                             <th>Rating</th>
                             <th>Time</th>
                             <th>Room</th>
@@ -46,7 +46,7 @@
                         {% if game.is_full() %}
                         <tr class="hook join disabled" title="Game is full">
                             <td><span class="is is2 color-icon random"></span></td>
-                            <td>{{ game.creator().username }}</td>
+                            <td>{{ game.playing() }}</td>
                             <td>1500</td>
                             <td>{{ game.time_main }} + {{ game.time_increment }}</td>
                             <td>{{ game.count_players() }} / 4</td>
@@ -55,7 +55,7 @@
                         {% else %}
                         <tr class="hook join" title="Join the game">
                             <td><span class="is is2 color-icon random"></span></td>
-                            <td>{{ game.creator().username }}</td>
+                            <td>{{ game.playing() }}</td>
                             <td>1500</td>
                             <td>{{ game.time_main }} + {{ game.time_increment }}</td>
                             <td>{{ game.count_players() }} / 4</td>

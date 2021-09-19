@@ -36,7 +36,7 @@
                     <a class="toggle link anon" href="/settings"><span title="Preferences" data-icon=""></span></a>
                 </div>
                 {% if current_user.is_authenticated %}
-                <a id="username" href="/profile" class="signin button button-empty">{{ current_user.username }}</a>
+                <a id="username" href="/@/{{ current_user.username }}" class="signin button button-empty">{{ current_user.username }}</a>
                 {% else %}
                 <a href="/login" class="signin button button-empty">Log in</a>
                 {% endif %}
