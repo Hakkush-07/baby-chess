@@ -1,6 +1,6 @@
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user, login_required
-from baby import app, db, bcrypt, chars
+from baby import app, db, bcrypt, chars, sio
 from baby.models import User, Game
 from random import choice
 
@@ -83,7 +83,7 @@ def settings():
 
 @app.route("/create", methods=["POST"])
 @login_required
-def data():
+def create():
     print(request.form)
     time_main, time_increment = map(int, request.form["time-control"].split(","))
     random_key = "".join([choice(chars) for _ in range(8)])
@@ -108,14 +108,17 @@ def game(key):
 
 
 @app.route("/quit/<string:key>", methods=["POST"])
+@login_required
 def quit_game(key):
     g = Game.query.filter_by(key=key).first()
     if g is None or current_user.game_id != g.id:
         return redirect(url_for("home"))
     else:
         current_user.game_id = None
+        if g.is_empty():
+            db.session.delete(g)
         db.session.commit()
-        return render_template("game.html", title="Play", game=g)
+        return redirect(url_for("home"))
 
 
 @app.route("/clear")
@@ -124,3 +127,26 @@ def clear():
     db.session.commit()
     return redirect("/")
 
+
+client_count = 0
+
+
+@sio.event
+def connect():
+    global client_count
+    client_count += 1
+    print("connected")
+    sio.emit("client_count", client_count)
+
+
+@sio.event
+def disconnect():
+    global client_count
+    client_count -= 1
+    print("disconnected")
+    sio.emit("client_count", client_count)
+
+
+@sio.event
+def message_sent(data):
+    sio.emit("message", data)

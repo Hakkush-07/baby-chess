@@ -34,6 +34,9 @@ class Game(db.Model):
     def is_full(self):
         return self.count_players() >= 4
 
+    def is_empty(self):
+        return self.count_players() == 0
+
     def count_players(self):
         return len(self.players)
 

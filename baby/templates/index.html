@@ -34,14 +34,14 @@
                     <thead>
                         <tr>
                             <th></th>
-                            <th>Host</th>
+                            <th>Created by</th>
                             <th>Rating</th>
                             <th>Time</th>
                             <th>Room</th>
-                            <th>Join/Spectate</th>
+                            <th>Join</th>
                         </tr>
                     </thead>
-                    <tbody class="">
+                    <tbody>
                         {% for game in games %}
                         {% if game.is_full() %}
                         <tr class="hook join disabled" title="Game is full">

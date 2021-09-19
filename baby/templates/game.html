@@ -34,7 +34,7 @@
                     <a class="toggle link anon" href="/settings"><span title="Preferences" data-icon=""></span></a>
                 </div>
                 {% if current_user.is_authenticated %}
-                <a href="/profile" class="signin button button-empty">{{ current_user.username }}</a>
+                <a id="username" href="/profile" class="signin button button-empty">{{ current_user.username }}</a>
                 {% else %}
                 <a href="/login" class="signin button button-empty">Log in</a>
                 {% endif %}
@@ -56,10 +56,9 @@
                                 </div>
                             </div>
                             <div class="game__meta__players">
-                                <div class="player color-icon is white text">{{ game.host }}</div>
-                                <div class="player color-icon is black text">{{ game.player_2 if game.player_2 else '...waiting...' }}</div>
-                                <div class="player color-icon is white text">{{ game.player_3 if game.player_3 else '...waiting...' }}</div>
-                                <div class="player color-icon is black text">{{ game.player_4 if game.player_4 else '...waiting...' }}</div>
+                                {% for player in game.players %}
+                                <div class="player color-icon is white text">{{ player.username }}</div>
+                                {% endfor %}
                             </div>
                         </section>
                     </div>
@@ -70,16 +69,9 @@
                             </div>
                         </div>
                         <div class="mchat__content discussion">
-                            <ol id="messages" class="mchat__messages chat-v-1" role="log" aria-live="polite" aria-atomic="false">
-                                <li>
-                                    <span class="user-link">InReallyBadShape</span>
-                                    <span id="mes">Penguin is actually overrated</span>
-                                </li>
-                            </ol>
-                            <form onsubmit="change('on submitten gelen')">
-                            <input id="but" class="mchat__say" placeholder="Please be nice">
-                            <button onclick="change('new mesaage')" type="submit">Send</button>
-                            </form>
+                            <ol id="messages" class="mchat__messages chat-v-1" role="log" aria-live="polite" aria-atomic="false"></ol>
+                            <input id="chat_send" class="mchat__say" placeholder="Please be nice">
+                            <button onclick="send_msg()" type="submit">Send</button>
                         </div>
                     </section>
                 </aside>
@@ -182,27 +174,30 @@
             var socket = io();
             socket.on("connect", function() {
                 console.log("connected");
-                socket.emit("custom_event", {data: "I'm connected!"});
-                socket.emit("add", {numbers: [2, 3]}, function (result) {
-                    console.log(result);
-                });
             });
             socket.on("disconnect", function() {
                 console.log("disconnected");
             });
             socket.on("client_count", function(count) {
                 console.log("there are " + count + " connected clients");
-                document.getElementById("cc").innerHTML = count;
-                document.getElementById("sp").innerHTML = count;
             });
-
-            function change(msg) {
-                var newItem = document.createElement("li");
-                var textnode = document.createTextNode(msg);
-                newItem.appendChild(textnode);
+            socket.on("message", function(data) {
+                var li = document.createElement("li");
+                var author = document.createElement("span");
+                author.innerHTML = data.author;
+                author.setAttribute("class", "user-link");
+                li.appendChild(author);
+                var message = document.createElement("span");
+                message.innerHTML = data.message;
+                li.appendChild(message);
                 var list = document.getElementById("messages");
-                list.insertBefore(newItem, list.childNodes[0]);
-                document.getElementById("mes").innerHTML = "new message";
+                list.insertBefore(li, list.childNodes[0]);
+            });
+            function send_msg() {
+                var msg = document.getElementById("chat_send").value;
+                var author = document.getElementById("username").innerHTML;
+                document.getElementById("chat_send").value = "";
+                socket.emit("message_sent", {author: author, message: msg});
             }
         </script>
     </body>
