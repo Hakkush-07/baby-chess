@@ -103,7 +103,7 @@ def create():
 @login_required
 def game(key):
     g = Game.query.filter_by(key=key).first()
-    if g is None or g.is_full() or current_user not in g.players:
+    if g is None or g.is_full():
         return redirect(url_for("home"))
     else:
         current_user.game_id = g.id

@@ -59,6 +59,9 @@
                                 {% for player in game.players %}
                                 <div class="player color-icon is white text">{{ player.username }}</div>
                                 {% endfor %}
+                                {% for i in range(4 - game.count_players()) %}
+                                <div class="player color-icon is white text">...waiting...</div>
+                                {% endfor %}
                             </div>
                         </section>
                     </div>
