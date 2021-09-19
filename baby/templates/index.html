@@ -43,22 +43,22 @@
                     </thead>
                     <tbody class="">
                         {% for game in games %}
-                        {% if game.players() == 4 %}
-                        <tr class="hook join disabled" title="Spectate the game">
+                        {% if game.is_full() %}
+                        <tr class="hook join disabled" title="Game is full">
                             <td><span class="is is2 color-icon random"></span></td>
-                            <td>{{ game.host }}</td>
+                            <td>{{ game.creator().username }}</td>
                             <td>1500</td>
                             <td>{{ game.time_main }} + {{ game.time_increment }}</td>
-                            <td>{{ game.players() }} / 4</td>
-                            <td><a href="/game/{{ game.key }}" class="button button-empty">Spectate</a></td>
+                            <td>{{ game.count_players() }} / 4</td>
+                            <td></td>
                         </tr>
                         {% else %}
                         <tr class="hook join" title="Join the game">
                             <td><span class="is is2 color-icon random"></span></td>
-                            <td>{{ game.host }}</td>
+                            <td>{{ game.creator().username }}</td>
                             <td>1500</td>
                             <td>{{ game.time_main }} + {{ game.time_increment }}</td>
-                            <td>{{ game.players() }} / 4</td>
+                            <td>{{ game.count_players() }} / 4</td>
                             <td><a href="/game/{{ game.key }}" class="button button-empty">Join</a></td>
                         </tr>
                         {% endif %}

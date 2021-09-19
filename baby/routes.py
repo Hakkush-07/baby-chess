@@ -1,7 +1,8 @@
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user, login_required
-from baby import app, db, bcrypt
+from baby import app, db, bcrypt, chars
 from baby.models import User, Game
+from random import choice
 
 
 @app.route("/")
@@ -84,10 +85,13 @@ def settings():
 @login_required
 def data():
     print(request.form)
-    host_name = current_user.username if current_user.is_authenticated else "Anonymous"
-    new_game = Game(host_name, request.form["time-control"])
+    time_main, time_increment = map(int, request.form["time-control"].split(","))
+    random_key = "".join([choice(chars) for _ in range(8)])
+    new_game = Game(time_main=time_main, time_increment=time_increment, key=random_key)
     db.session.add(new_game)
+    current_user.game = new_game
     db.session.commit()
+    print(current_user.game)
     return redirect(url_for("home"))
 
 
@@ -95,43 +99,28 @@ def data():
 @login_required
 def game(key):
     g = Game.query.filter_by(key=key).first()
-    if g is None:
+    if g is None or g.is_full():
         return redirect(url_for("home"))
     else:
-        if g.host == current_user.username:
-            pass
-        elif g.player_2 is None:
-            g.player_2 = current_user.username
-        elif g.player_3 is None:
-            g.player_3 = current_user.username
-        elif g.player_4 is None:
-            g.player_4 = current_user.username
+        current_user.game_id = g.id
         db.session.commit()
         return render_template("game.html", title="Play", game=g)
-
-
-@app.route("/abort/<string:key>", methods=["POST"])
-def abort(key):
-    g = Game.query.filter_by(key=key).first()
-    if g is None:
-        return redirect(url_for("home"))
-    else:
-        db.session.delete(g)
-        db.session.commit()
-        return redirect(url_for("home"))
 
 
 @app.route("/quit/<string:key>", methods=["POST"])
 def quit_game(key):
     g = Game.query.filter_by(key=key).first()
-    if g.is_in_game(current_user.username):
-        if current_user.username == g.player_2:
-            g.player_2 = None
-        elif current_user.username == g.player_3:
-            g.player_3 = None
-        elif current_user.username == g.player_4:
-            g.player_4 = None
-        db.session.commit()
+    if g is None or current_user.game_id != g.id:
         return redirect(url_for("home"))
     else:
-        return redirect(url_for("home"))
+        current_user.game_id = None
+        db.session.commit()
+        return render_template("game.html", title="Play", game=g)
+
+
+@app.route("/clear")
+def clear():
+    db.session.query(Game).delete()
+    db.session.commit()
+    return redirect("/")
+

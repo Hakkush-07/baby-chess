@@ -2,6 +2,9 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
+import string
+
+chars = string.ascii_lowercase + string.digits + string.ascii_uppercase
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "3a1b4c1d5e9f"
