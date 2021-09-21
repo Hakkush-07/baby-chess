@@ -1,10 +1,16 @@
 from baby import db, login_manager
 from flask_login import UserMixin
 import string
-import chess
+import random
+from chess.variant import CrazyhouseBoard
 
 chars = string.ascii_lowercase + string.digits
 starting_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR[] w KQkq - 0 1"
+roles = ["w1", "b1", "w2", "b2"]
+
+
+def list_diff(l1, l2):
+    return [i for i in l1 if i not in l2]
 
 
 @login_manager.user_loader
@@ -17,6 +23,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(20), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
     game_id = db.Column(db.Integer, db.ForeignKey("game.id"))
+    role = db.Column(db.String(2))
 
     def __repr__(self):
         return f"User({self.username})"
@@ -76,3 +83,20 @@ class Game(db.Model):
             "black": [["black", n, pockets.count(black[names_wo_king.index(n)])] for n in names_wo_king]
         }
         return pieces, pocket_pieces
+
+    def player_roles(self):
+        return {p.role: p.username for p in self.players}
+
+    def get_role(self):
+        return random.choice(list_diff(roles, self.player_roles().keys()))
+
+    def move_control(self, player_role, move):
+        fen = self.fen_1 if player_role.endswith("1") else self.fen_2
+        board = CrazyhouseBoard(fen=fen)
+        if board.turn == (player_role.startswith("w")):
+            board.push_san(move)
+            if player_role.endswith("1"):
+                self.fen_1 = board.fen()
+            else:
+                self.fen_2 = board.fen()
+            db.session.commit()

@@ -53,13 +53,34 @@
                                     </form>
                                 </div>
                             </div>
-                            <div class="game__meta__players" style="display: grid; grid-template-columns: repeat(2, 100px); grid-gap: 6px 50px; font-size: 16px">
-                                {% for player in game.players %}
-                                <div class="player color-icon is white text">{{ player.username }}</div>
-                                {% endfor %}
-                                {% for i in range(4 - game.count_players()) %}
-                                <div class="player color-icon is white text">...waiting...</div>
-                                {% endfor %}
+                            <div id="players" class="game__meta__players" style="display: grid; grid-template-columns: repeat(2, 100px); grid-gap: 6px 50px; font-size: 16px">
+                                {% if current_user.role == "w1" %}
+                                <div id="b1" class="player color-icon is black text">{{ game.player_roles().get("b1", "...waiting...") }}</div>
+                                <div id="w2" class="player color-icon is white text">{{ game.player_roles().get("w2", "...waiting...") }}</div>
+                                <div id="w1" class="player color-icon is white text">{{ current_user.username }}</div>
+                                <div id="b2" class="player color-icon is black text">{{ game.player_roles().get("b2", "...waiting...") }}</div>
+                                {% else %}
+                                {% if current_user.role == "b1" %}
+                                <div id="w1" class="player color-icon is white text">{{ game.player_roles().get("w1", "...waiting...") }}</div>
+                                <div id="b2" class="player color-icon is black text">{{ game.player_roles().get("b2", "...waiting...") }}</div>
+                                <div id="b1" class="player color-icon is black text">{{ current_user.username }}</div>
+                                <div id="w2" class="player color-icon is white text">{{ game.player_roles().get("w2", "...waiting...") }}</div>
+                                {% else %}
+                                {% if current_user.role == "w2" %}
+                                <div id="b2" class="player color-icon is black text">{{ game.player_roles().get("b2", "...waiting...") }}</div>
+                                <div id="w1" class="player color-icon is white text">{{ game.player_roles().get("w1", "...waiting...") }}</div>
+                                <div id="w2" class="player color-icon is white text">{{ current_user.username }}</div>
+                                <div id="b1" class="player color-icon is black text">{{ game.player_roles().get("b1", "...waiting...") }}</div>
+                                {% else %}
+                                {% if current_user.role == "b2" %}
+                                <div id="w2" class="player color-icon is white text">{{ game.player_roles().get("w2", "...waiting...") }}</div>
+                                <div id="b1" class="player color-icon is black text">{{ game.player_roles().get("b1", "...waiting...") }}</div>
+                                <div id="b2" class="player color-icon is black text">{{ current_user.username }}</div>
+                                <div id="w1" class="player color-icon is white text">{{ game.player_roles().get("w1", "...waiting...") }}</div>
+                                {% endif %}
+                                {% endif %}
+                                {% endif %}
+                                {% endif %}
                             </div>
                         </section>
                     </div>
@@ -309,6 +330,12 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
         <script type="text/javascript" charset="utf-8">
             var socket = io();
+            socket.on("connect", function() {
+                socket.emit("get_board", "", function (data) {
+                    create_board(data.board_main.pieces, data.board_main.last_move, data.board_main.pockets, data.orientation, "board", "main");
+                    create_board(data.board_side.pieces, data.board_side.last_move, data.board_side.pockets, 1 - data.orientation, "board-side", "side");
+                });
+            });
             socket.on("information", function(data) {
                 var li = document.createElement("li");
                 li.setAttribute("class", "system");
@@ -332,8 +359,14 @@
                 list.insertBefore(li, list.childNodes[0]);
             });
             socket.on("move", function(data) {
-                create_board(data.board_main.pieces, data.board_main.last_move, data.board_main.pockets, data.orientation, "board", "main");
-                create_board(data.board_side.pieces, data.board_side.last_move, data.board_side.pockets, 1 - data.orientation, "board-side", "side");
+                socket.emit("get_board", "", function (data) {
+                    create_board(data.board_main.pieces, data.board_main.last_move, data.board_main.pockets, data.orientation, "board", "main");
+                    create_board(data.board_side.pieces, data.board_side.last_move, data.board_side.pockets, 1 - data.orientation, "board-side", "side");
+                });
+            });
+            socket.on("player", function(player) {
+                var p = document.getElementById(player[0]);
+                p.innerHTML = player[1];
             });
             function create_board(pieces, last_move, pockets, orientation, board_id, pockets_id) {
                 var board = document.createElement("cg-board");

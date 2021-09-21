@@ -104,6 +104,8 @@ def game(key):
         return redirect(url_for("home"))
     else:
         current_user.game_id = g.id
+        if current_user.role is None:
+            current_user.role = g.get_role()
         db.session.commit()
         return render_template("game.html", title="Play", game=g)
 
@@ -116,6 +118,7 @@ def quit_game(key):
         return redirect(url_for("home"))
     else:
         current_user.game_id = None
+        current_user.role = None
         if g.is_empty():
             db.session.delete(g)
         db.session.commit()
@@ -132,32 +135,47 @@ def clear():
 @sio.event
 def connect():
     sio.emit("information", {"username": current_user.username, "info": "joined"})
+    sio.emit("player", [current_user.role, current_user.username])
 
 
 @sio.event
 def disconnect():
     sio.emit("information", {"username": current_user.username, "info": "left"})
+    sio.emit("player", [current_user.role, "...waiting..."])
+
+
+@sio.event
+def get_board(a):
+    pieces_1, pockets_1 = current_user.game.fen2list(1)
+    pieces_2, pockets_2 = current_user.game.fen2list(2)
+    pieces_main = pieces_1 if current_user.role.endswith("1") else pieces_2
+    pieces_side = pieces_2 if current_user.role.endswith("1") else pieces_1
+    pockets_main = pockets_1 if current_user.role.endswith("1") else pockets_2
+    pockets_side = pockets_2 if current_user.role.endswith("1") else pockets_1
+    orientation = 1 if current_user.role.startswith("w") else 0
+    board = {
+        "orientation": orientation,
+        "board_main": {
+            "pieces": pieces_main,
+            "pockets": pockets_main,
+            "last_move": [[3, 4], [5, 6]]
+        },
+        "board_side": {
+            "pieces": pieces_side,
+            "pockets": pockets_side,
+            "last_move": [[3, 4], [3, 5]]
+        }
+    }
+    return board
 
 
 @sio.event
 def message_sent(data):
     if data["message"].startswith("!"):
-        # is the move valid? sent by the correct player? do not forget to commit to the database
-        pieces_1, pockets_1 = current_user.game.fen2list(1)
-        pieces_2, pockets_2 = current_user.game.fen2list(2)
-        board = {
-            "orientation": 1,
-            "board_main": {
-                "pieces": pieces_1,
-                "pockets": pockets_1,
-                "last_move": [[3, 4], [5, 6]]
-            },
-            "board_side": {
-                "pieces": pieces_2,
-                "pockets": pockets_2,
-                "last_move": [[3, 4], [5, 6]]
-            }
-        }
-        sio.emit("move", board)
+        try:
+            current_user.game.move_control(current_user.role, data["message"][1:])
+            sio.emit("move", "")
+        except:
+            print("wrong move")
     else:
         sio.emit("message", data)

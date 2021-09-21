@@ -4,7 +4,7 @@
     <main class="page-menu">
         <div class="page-menu__content box user-show">
             <div class="box__top user-show__header">
-                <h1><span class="online user-link"><i class="line"></i>{{ user.username }} - {{ user.game }}</span></h1>
+                <h1><span class="online user-link"><i class="line"></i>{{ user.username }} - {{ user.game }} - {{ user.role }}</span></h1>
                 <div class="trophies">
                     {% if current_user == user %}
                     <a href="/logout" class="signin button button-empty">Log out</a>
