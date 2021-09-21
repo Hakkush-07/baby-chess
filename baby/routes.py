@@ -138,18 +138,24 @@ def clear():
 
 @sio.event
 def connect():
-    room = current_user.game.key
-    join_room(room)
-    sio.emit("information", {"username": current_user.username, "info": "joined"}, to=room)
-    sio.emit("player", [current_user.role, current_user.username], to=room)
+    try:
+        room = current_user.game.key
+        join_room(room)
+        sio.emit("information", {"username": current_user.username, "info": "joined"}, to=room)
+        sio.emit("player", [current_user.role, current_user.username], to=room)
+    except:
+        pass
 
 
 @sio.event
 def disconnect():
-    room = current_user.game.key
-    leave_room(room)
-    sio.emit("information", {"username": current_user.username, "info": "left"}, to=room)
-    sio.emit("player", [current_user.role, "...waiting..."], to=room)
+    try:
+        room = current_user.game.key
+        leave_room(room)
+        sio.emit("information", {"username": current_user.username, "info": "left"}, to=room)
+        sio.emit("player", [current_user.role, "...waiting..."], to=room)
+    except:
+        pass
 
 
 @sio.event
