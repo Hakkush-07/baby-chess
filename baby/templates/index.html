@@ -41,7 +41,7 @@
                             <th>Join</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="games">
                         {% for game in games %}
                         {% if game.is_full() %}
                         <tr class="hook join disabled" title="Game is full">

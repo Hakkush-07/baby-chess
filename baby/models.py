@@ -10,7 +10,12 @@ roles = ["w1", "b1", "w2", "b2"]
 
 
 def list_diff(l1, l2):
-    return [i for i in l1 if i not in l2]
+    a = l1[:]
+    b = l2[:]
+    for i in b:
+        if i is not None:
+            a.remove(i)
+    return a
 
 
 @login_manager.user_loader
@@ -88,15 +93,39 @@ class Game(db.Model):
         return {p.role: p.username for p in self.players}
 
     def get_role(self):
-        return random.choice(list_diff(roles, self.player_roles().keys()))
+        return random.choice(list_diff(roles, list(self.player_roles().keys())))
 
     def move_control(self, player_role, move):
         fen = self.fen_1 if player_role.endswith("1") else self.fen_2
+        fen_other = self.fen_2 if player_role.endswith("1") else self.fen_1
         board = CrazyhouseBoard(fen=fen)
+        board_other = CrazyhouseBoard(fen=fen_other)
+        # pocket_old = fen[fen.index("[") + 1:fen.index("]")]
+
         if board.turn == (player_role.startswith("w")):
-            board.push_san(move)
-            if player_role.endswith("1"):
-                self.fen_1 = board.fen()
+            if "x" in move:
+                a = board.pockets[player_role.startswith("w")].copy()
+                b = board_other.pockets[player_role.startswith("b")].copy()
+                board.pockets[player_role.startswith("w")] = b
+                board_other.pockets[player_role.startswith("b")] = a
+                board.push_san(move)
+                c = board.pockets[player_role.startswith("w")].copy()
+                board.pockets[player_role.startswith("w")] = a
+                board_other.pockets[player_role.startswith("b")] = c
+                # a, b = board.pockets[player_role.startswith("w")], board_other.pockets[player_role.startswith("w")]
+                # board.pockets[player_role.startswith("w")] = b
+                # board_other.pockets[player_role.startswith("b")] = a
+                if player_role.endswith("1"):
+                    self.fen_1 = board.fen()
+                    self.fen_2 = board_other.fen()
+                else:
+                    self.fen_2 = board.fen()
+                    self.fen_1 = board_other.fen()
+                db.session.commit()
             else:
-                self.fen_2 = board.fen()
-            db.session.commit()
+                board.push_san(move)
+                if player_role.endswith("1"):
+                    self.fen_1 = board.fen()
+                else:
+                    self.fen_2 = board.fen()
+                db.session.commit()

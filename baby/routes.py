@@ -1,5 +1,6 @@
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user, login_required
+from flask_socketio import join_room, leave_room
 from baby import app, db, bcrypt, chars, sio
 from baby.models import User, Game
 from random import choice
@@ -93,6 +94,7 @@ def create():
         db.session.add(new_game)
         current_user.game = new_game
         db.session.commit()
+        sio.emit("game_change", "")
     return redirect(url_for("home"))
 
 
@@ -103,10 +105,11 @@ def game(key):
     if g is None or g.is_full():
         return redirect(url_for("home"))
     else:
-        current_user.game_id = g.id
+        current_user.game = g
         if current_user.role is None:
             current_user.role = g.get_role()
         db.session.commit()
+        sio.emit("game_change", "")
         return render_template("game.html", title="Play", game=g)
 
 
@@ -117,11 +120,12 @@ def quit_game(key):
     if g is None or current_user.game_id != g.id:
         return redirect(url_for("home"))
     else:
-        current_user.game_id = None
+        current_user.game = None
         current_user.role = None
         if g.is_empty():
             db.session.delete(g)
         db.session.commit()
+        sio.emit("game_change", "")
         return redirect(url_for("home"))
 
 
@@ -134,14 +138,18 @@ def clear():
 
 @sio.event
 def connect():
-    sio.emit("information", {"username": current_user.username, "info": "joined"})
-    sio.emit("player", [current_user.role, current_user.username])
+    room = current_user.game.key
+    join_room(room)
+    sio.emit("information", {"username": current_user.username, "info": "joined"}, to=room)
+    sio.emit("player", [current_user.role, current_user.username], to=room)
 
 
 @sio.event
 def disconnect():
-    sio.emit("information", {"username": current_user.username, "info": "left"})
-    sio.emit("player", [current_user.role, "...waiting..."])
+    room = current_user.game.key
+    leave_room(room)
+    sio.emit("information", {"username": current_user.username, "info": "left"}, to=room)
+    sio.emit("player", [current_user.role, "...waiting..."], to=room)
 
 
 @sio.event
@@ -171,11 +179,12 @@ def get_board(a):
 
 @sio.event
 def message_sent(data):
+    room = current_user.game.key
     if data["message"].startswith("!"):
         try:
             current_user.game.move_control(current_user.role, data["message"][1:])
-            sio.emit("move", "")
+            sio.emit("move", "", to=room)
         except:
             print("wrong move")
     else:
-        sio.emit("message", data)
+        sio.emit("message", data, to=room)
