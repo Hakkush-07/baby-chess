@@ -18,7 +18,6 @@ def register():
         else:
             return render_template("register.html", title="Register")
     elif request.method == "POST":
-        print(request.form)
         username_valid = request.form["username"].isalnum() and 4 <= len(request.form["username"]) <= 20
         password_valid = request.form["password"].isalnum() and 4 <= len(request.form["password"]) <= 20
         username_unique = User.query.filter_by(username=request.form["username"]).first() is None
@@ -88,14 +87,12 @@ def settings():
 @login_required
 def create():
     if current_user.game is None:
-        print(request.form)
         time_main, time_increment = map(int, request.form["time-control"].split(","))
         random_key = "".join([choice(chars) for _ in range(8)])
         new_game = Game(time_main=time_main, time_increment=time_increment, key=random_key)
         db.session.add(new_game)
         current_user.game = new_game
         db.session.commit()
-        print(current_user.game)
     return redirect(url_for("home"))
 
 
@@ -132,25 +129,35 @@ def clear():
     return redirect("/")
 
 
-client_count = 0
-
-
 @sio.event
 def connect():
-    global client_count
-    client_count += 1
-    print("connected")
-    sio.emit("client_count", client_count)
+    sio.emit("information", {"username": current_user.username, "info": "joined"})
 
 
 @sio.event
 def disconnect():
-    global client_count
-    client_count -= 1
-    print("disconnected")
-    sio.emit("client_count", client_count)
+    sio.emit("information", {"username": current_user.username, "info": "left"})
 
 
 @sio.event
 def message_sent(data):
-    sio.emit("message", data)
+    if data["message"].startswith("!"):
+        # is the move valid? sent by the correct player? do not forget to commit to the database
+        pieces_1, pockets_1 = current_user.game.fen2list(1)
+        pieces_2, pockets_2 = current_user.game.fen2list(2)
+        board = {
+            "orientation": 1,
+            "board_main": {
+                "pieces": pieces_1,
+                "pockets": pockets_1,
+                "last_move": [[3, 4], [5, 6]]
+            },
+            "board_side": {
+                "pieces": pieces_2,
+                "pockets": pockets_2,
+                "last_move": [[3, 4], [5, 6]]
+            }
+        }
+        sio.emit("move", board)
+    else:
+        sio.emit("message", data)
