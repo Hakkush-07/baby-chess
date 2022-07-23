@@ -75,6 +75,7 @@ def connect():
     sio.emit("board")
     sio.emit("table")
     sio.emit("times")
+    sio.emit("game_status")
     sio.emit("info", f"{current_user.username} joined")
 
 @sio.event
@@ -126,10 +127,11 @@ def time():
     if dummy.adjust_time():
         sio.emit("game_status")
         sio.emit("game_over")
-        dummy.update_result_time()
-    if not dummy.ongoing and dummy.result_reset():
-        dummy.status = "Waiting for players"
+    if dummy.waiting and dummy.result_reset():
+        dummy.reset()
         sio.emit("players", dummy.players_dict)
         sio.emit("board")
         sio.emit("table")
         sio.emit("times")
+        sio.emit("game_status")
+        sio.emit("info", "New Game!")

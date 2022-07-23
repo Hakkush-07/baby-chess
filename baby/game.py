@@ -1,4 +1,3 @@
-from unittest import result
 import chess
 import chess.variant
 import time
@@ -19,6 +18,7 @@ class Game:
         self.previous_time = time.time()
         self.result_time = time.time()
         self.status = "Waiting for players"
+        self.waiting = False
     
     @staticmethod
     def player_string(player, space=False):
@@ -68,6 +68,20 @@ class Game:
                     self.boardX.push_uci(uci)
                 self.ongoing = True
                 self.status = "Playing"
+                outcome = self.boardX.outcome()
+                if outcome:
+                    termination = outcome.termination
+                    if termination == chess.Termination.CHECKMATE:
+                        termination = "checkmate"
+                    self.ongoing = False
+                    self.waiting = True
+                    if outcome.winner == chess.WHITE:
+                        self.status = f"{self.playerXW} and {self.playerYB} win by {termination}"
+                    elif outcome.winner == chess.BLACK:
+                        self.status = f"{self.playerXB} and {self.playerYW} win by {termination}"
+                    else:
+                        self.status = f"Draw by {termination}"
+                    self.update_result_time()
                 if username == self.playerXW:
                     self.timeXW += 2
                 else:
@@ -85,6 +99,20 @@ class Game:
                     self.boardY.push_uci(uci)
                 self.ongoing = True
                 self.status = "Playing"
+                outcome = self.boardX.outcome()
+                if outcome:
+                    termination = outcome.termination
+                    if termination == chess.Termination.CHECKMATE:
+                        termination = "checkmate"
+                    self.ongoing = False
+                    self.waiting = True
+                    if outcome.winner == chess.WHITE:
+                        self.status = f"{self.playerXB} and {self.playerYW} win by {termination}"
+                    elif outcome.winner == chess.BLACK:
+                        self.status = f"{self.playerXW} and {self.playerYB} win by {termination}"
+                    else:
+                        self.status = f"Draw by {termination}"
+                    self.update_result_time()
                 if username == self.playerYW:
                     self.timeYW += 2
                 else:
@@ -94,6 +122,8 @@ class Game:
                 return False
     
     def move(self, username, source, target, piece, color):
+        if self.waiting:
+            return False
         if username not in self.players:
             return False
         if color == "w" and username not in [self.playerXW, self.playerYW]:
@@ -149,32 +179,37 @@ class Game:
                 if self.timeXW < 0:
                     self.timeXW = 0
                     self.ongoing = False
+                    self.waiting = True
                     self.status = f"{self.playerXB} and {self.playerYW} win by time out"
                     result = True
-                    self.reset()
+                    self.update_result_time()
             elif self.boardX.turn == chess.BLACK:
                 self.timeXB -= diff
                 if self.timeXB < 0:
                     self.timeXB = 0
                     self.ongoing = False
+                    self.waiting = True
                     self.status = f"{self.playerXW} and {self.playerYB} win by time out"
                     result = True
-                    self.reset()
+                    self.update_result_time()
             if self.boardY.turn == chess.WHITE:
                 self.timeYW -= diff
                 if self.timeYW < 0:
                     self.timeYW = 0
                     self.ongoing = False
+                    self.waiting = True
                     self.status = f"{self.playerXW} and {self.playerYB} win by time out"
                     result = True
-                    self.reset()
+                    self.update_result_time()
             elif self.boardY.turn == chess.BLACK:
                 self.timeYB -= diff
                 if self.timeYB < 0:
                     self.timeYB = 0
                     self.ongoing = False
+                    self.waiting = True
                     self.status = f"{self.playerXB} and {self.playerYW} win by time out"
                     result = True
+                    self.update_result_time()
         return result
 
     def get_board(self, username):
@@ -298,4 +333,5 @@ class Game:
         self.boardY = chess.variant.CrazyhouseBoard()
         self.ongoing = False
         self.previous_time = time.time()
-        # self.status = "Waiting for players"
+        self.status = "Waiting for players"
+        self.waiting = False
