@@ -1,17 +1,56 @@
-{% extends "layout.html" %}
-{% block content %}
-<div id="main-wrap" class="is2d">
-    <main class="page-menu">
-        <div class="page-menu__content box user-show">
-            <div class="box__top user-show__header">
-                <h1><span class="online user-link"><i class="line"></i>{{ user.username }} - {{ user.game }} - {{ user.role }}</span></h1>
-                <div class="trophies">
-                    {% if current_user == user %}
-                    <a href="/logout" class="signin button button-empty">Log out</a>
-                    {% endif %}
-                </div>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>libaby - {{user.username}}</title>
+        <link href="https://lichess1.org/assets/_19HR0G/css/site.ltr.dark.min.css" rel="stylesheet"/>
+        <link href="https://lichess1.org/assets/_19HR0G/css/user.show.ltr.dark.min.css" rel="stylesheet"/>
+        <link id="favicon" rel="icon" type="image/png" href="https://lichess1.org/assets/_Spvs4E/logo/lichess-favicon-32.png" sizes="32x32">
+    </head>
+    <body class="dark brown Woodi Basic coords-in" data-theme="dark">
+        <header id="top">
+            <div class="site-title-nav">
+                <h1 class="site-title"><a href="/">libaby</a></h1>
             </div>
+            <div class="site-buttons">
+                {% if current_user == user %}
+                <a href="/logout" class="signin button button-empty">Log out</a>
+                {% else %}
+                <a id="username" href="/@/{{ current_user.username }}" class="signin button button-empty">{{ current_user.username }}</a>
+                {% endif %}
+            </div>
+        </header>
+        <div id="main-wrap" class="is2d">
+            <main class="page-menu">
+                <aside class="page-menu__menu">
+                    <div class="side sub-ratings">
+                        <a data-icon="" href="/">
+                            <span>
+                                <h3>Blitz</h3>
+                                <rating>
+                                    <strong>3000</strong>
+                                    <span>0 games</span>
+                                </rating>
+                            </span>
+                        </a>
+                    </div>
+                </aside>
+                <div class="page-menu__content box user-show">
+                    <div class="box__top user-show__header">
+                        {% if is_admin %}
+                        <h1 class="user-link online"><a href="/@/admin"><i class="line patron" title="Owner"></i></a><span class="user-link" data-href="/@/{{user.username}}"><span class="utitle" title="Grandmaster">GM</span>&nbsp;{{user.username}}</span></h1>
+                        <div class="trophies">
+                            <a href="/owner" class="trophy award patron icon3d" title="Owner"></a>
+                        </div>
+                        {% else %}
+                        <h1><span class="online user-link"><i class="line"></i>{{user.username}}</span></h1><div class="trophies"></div>
+                        {% endif %}
+                    </div>
+                    <div id="us_profile">
+                        <div class="rating-history"></div>
+                        <div class="profile-side"></div>
+                    </div>
+                </div>
+            </main>
         </div>
-    </main>
-</div>
-{% endblock %}
+    </body>
+</html>

@@ -1,84 +1,50 @@
-{% extends "layout.html" %}
-{% block content %}
-<div id="main-wrap" class="is2d">
-    <main class="lobby">
-        <div class="lobby__table">
-            <div class="game-setup" style="padding-top: 100px">
-                <div id="modal-wrap">
-                    <div>
-                        <h2>Create a game</h2>
-                        <form method="post" action="/create">
-                            <div class="time_mode_config optional_config">
-                                <label for="time-controls">Choose a time a control:</label>
-                                <select name="time-control" id="time-controls">
-                                    <option value="1,0">1 + 0 | Bullet</option>
-                                    <option value="2,1">2 + 1 | Bullet</option>
-                                    <option value="3,0">3 + 0 | Blitz</option>
-                                    <option value="3,2">3 + 2 | Blitz</option>
-                                    <option value="5,0">5 + 0 | Blitz</option>
-                                    <option value="5,3">5 + 3 | Blitz</option>
-                                    <option value="10,0">10 + 0 | Rapid</option>
-                                </select>
-                            </div>
-                            <div class="color-submits">
-                                <button type="submit" title="Create" class="color-submits__button button button-metal random">Create</button>
-                            </div>
-                        </form>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>libaby</title>
+        <link href="https://lichess1.org/assets/_dgEwKZ/css/site.ltr.dark.min.css" rel="stylesheet"/>
+        <link href="https://lichess1.org/assets/_dgEwKZ/css/lobby.ltr.dark.min.css" rel="stylesheet"/>
+        <link rel="mask-icon" href="https://lichess1.org/assets/_dgEwKZ/logo/lichess.svg" color="black" />
+        <link id="favicon" rel="icon" type="image/png" href="https://lichess1.org/assets/_Spvs4E/logo/lichess-favicon-32.png" sizes="32x32">
+    </head>
+    <body style="overflow: hidden" class="dark brown Woodi Basic coords-in" data-theme="dark">
+        <header id="top">
+            <div class="site-title-nav">
+                <h1 class="site-title"><a href="/">libaby</a></h1>
+            </div>
+            <div class="site-buttons">
+                {% if current_user.is_authenticated %}
+                <a id="username" href="/@/{{current_user.username}}" class="signin button button-empty">{{current_user.username}}</a>
+                {% else %}
+                <a href="/login" class="signin button button-empty">Login</a>
+                {% endif %}
+            </div>
+        </header>
+        <div id="main-wrap" class="is2d">
+            <main class="lobby lobby--no-simuls">
+                <div class="lobby__table"></div>
+                <div class="lobby__app">
+                    <div class="lobby__app__content">
+                        <table class="hooks__list">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Players</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="hook join">
+                                    <td><span class="is is2 color-icon white"></span></td>
+                                    <td><a href="/game">None, None, None, None</a></td>
+                                    <td>3+2</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </div>
+                <div class="lobby__side"></div>
+            </main>
         </div>
-        <div class="lobby__app">
-            <div class="lobby__app__content">
-                <table class="hooks__list">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Players</th>
-                            <th>Rating</th>
-                            <th>Time</th>
-                            <th>Room</th>
-                            <th>Join</th>
-                        </tr>
-                    </thead>
-                    <tbody id="games">
-                        {% for game in games %}
-                        {% if game.is_full() %}
-                        <tr class="hook join disabled" title="Game is full">
-                            <td><span class="is is2 color-icon random"></span></td>
-                            <td>{{ game.playing() }}</td>
-                            <td>1500</td>
-                            <td>{{ game.time_main }} + {{ game.time_increment }}</td>
-                            <td>{{ game.count_players() }} / 4</td>
-                            <td></td>
-                        </tr>
-                        {% else %}
-                        <tr class="hook join" title="Join the game">
-                            <td><span class="is is2 color-icon random"></span></td>
-                            <td>{{ game.playing() }}</td>
-                            <td>1500</td>
-                            <td>{{ game.time_main }} + {{ game.time_increment }}</td>
-                            <td>{{ game.count_players() }} / 4</td>
-                            <td><a href="/game/{{ game.key }}" class="button button-empty">Join</a></td>
-                        </tr>
-                        {% endif %}
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="lobby__side">
-            <div class="about-side" style="width: auto">
-                Libaby is a free, libre, no-ads, open source chess server. <a href="/about">About Libaby...</a>
-            </div>
-        </div>
-    </main>
-</div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
-<script type="text/javascript" charset="utf-8">
-    var socket = io();
-    socket.on("game_change", function(data) {
-        location.reload();
-    });
-</script>
-{% endblock %}
+    </body>
+</html>
