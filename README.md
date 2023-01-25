@@ -1,6 +1,6 @@
-# baby chess online website
+# baby chess
 
-requirements.txt and runtime.txt is for heroku
-
-reqs.txt is for local testing
+```
+web: gunicorn -k eventlet -w 1 app:app
+```
 
