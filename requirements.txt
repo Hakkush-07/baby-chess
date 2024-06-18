@@ -16,5 +16,5 @@ python-engineio==4.3.3
 python-socketio==5.7.1
 SQLAlchemy==1.4.39
 Werkzeug==3.0.3
-eventlet==0.31.0
+eventlet==0.35.2
 gunicorn==22.0.0
