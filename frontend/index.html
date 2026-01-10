@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Baby Chess</title>
+    <link rel="stylesheet" href="/frontend/styles.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <section class="games">
+        <div class="game" data-board="1">
+          <div class="game-grid">
+            <div class="game-left">
+              <div class="seat-timer seat-timer-top">
+                <div class="seat-row">
+                  <div class="seat-name-wrap">
+                    <input
+                      id="nameBlack1"
+                      class="seat-input"
+                      type="text"
+                      placeholder="Username"
+                      maxlength="16"
+                      pattern="[A-Za-z0-9]+"
+                      autocomplete="off"
+                      autocapitalize="off"
+                      spellcheck="false"
+                    />
+                    <span id="displayBlack1" class="seat-name hidden"></span>
+                  </div>
+                  <button data-seat="black" data-board="1" class="seat-btn">Join</button>
+                </div>
+                <div class="promo-row hidden" id="promoWrapBlack1">
+                  <span>Promotion</span>
+                  <select id="promoBlack1" class="promo-select" data-board="1" data-seat="black">
+                    <option value="q" selected>Queen</option>
+                    <option value="r">Rook</option>
+                    <option value="b">Bishop</option>
+                    <option value="n">Knight</option>
+                  </select>
+                </div>
+              </div>
+              <div class="timer-box timer-top timer-black" id="timerBoxBlack1">
+                <span id="timerBlack1">--:--</span>
+              </div>
+              <div class="captures captures-top" id="capturesTop1"></div>
+              <div id="board-1" class="board" data-board="1"></div>
+              <div class="captures captures-bottom" id="capturesBottom1"></div>
+              <div class="timer-box timer-bottom timer-white" id="timerBoxWhite1">
+                <span id="timerWhite1">--:--</span>
+              </div>
+              <div class="seat-timer seat-timer-bottom">
+                <div class="seat-row">
+                  <div class="seat-name-wrap">
+                    <input
+                      id="nameWhite1"
+                      class="seat-input"
+                      type="text"
+                      placeholder="Username"
+                      maxlength="16"
+                      pattern="[A-Za-z0-9]+"
+                      autocomplete="off"
+                      autocapitalize="off"
+                      spellcheck="false"
+                    />
+                    <span id="displayWhite1" class="seat-name hidden"></span>
+                  </div>
+                  <button data-seat="white" data-board="1" class="seat-btn">Join</button>
+                </div>
+                <div class="promo-row hidden" id="promoWrapWhite1">
+                  <span>Promotion</span>
+                  <select id="promoWhite1" class="promo-select" data-board="1" data-seat="white">
+                    <option value="q" selected>Queen</option>
+                    <option value="r">Rook</option>
+                    <option value="b">Bishop</option>
+                    <option value="n">Knight</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="game-right"></div>
+          </div>
+        </div>
+
+        <div class="game" data-board="2">
+          <div class="game-grid">
+            <div class="game-left">
+              <div class="seat-timer seat-timer-top">
+                <div class="seat-row">
+                  <div class="seat-name-wrap">
+                    <input
+                      id="nameWhite2"
+                      class="seat-input"
+                      type="text"
+                      placeholder="Username"
+                      maxlength="16"
+                      pattern="[A-Za-z0-9]+"
+                      autocomplete="off"
+                      autocapitalize="off"
+                      spellcheck="false"
+                    />
+                    <span id="displayWhite2" class="seat-name hidden"></span>
+                  </div>
+                  <button data-seat="white" data-board="2" class="seat-btn">Join</button>
+                </div>
+                <div class="promo-row hidden" id="promoWrapWhite2">
+                  <span>Promotion</span>
+                  <select id="promoWhite2" class="promo-select" data-board="2" data-seat="white">
+                    <option value="q" selected>Queen</option>
+                    <option value="r">Rook</option>
+                    <option value="b">Bishop</option>
+                    <option value="n">Knight</option>
+                  </select>
+                </div>
+              </div>
+              <div class="timer-box timer-top timer-white" id="timerBoxWhite2">
+                <span id="timerWhite2">--:--</span>
+              </div>
+              <div class="captures captures-top" id="capturesTop2"></div>
+              <div id="board-2" class="board" data-board="2"></div>
+              <div class="captures captures-bottom" id="capturesBottom2"></div>
+              <div class="timer-box timer-bottom timer-black" id="timerBoxBlack2">
+                <span id="timerBlack2">--:--</span>
+              </div>
+              <div class="seat-timer seat-timer-bottom">
+                <div class="seat-row">
+                  <div class="seat-name-wrap">
+                    <input
+                      id="nameBlack2"
+                      class="seat-input"
+                      type="text"
+                      placeholder="Username"
+                      maxlength="16"
+                      pattern="[A-Za-z0-9]+"
+                      autocomplete="off"
+                      autocapitalize="off"
+                      spellcheck="false"
+                    />
+                    <span id="displayBlack2" class="seat-name hidden"></span>
+                  </div>
+                  <button data-seat="black" data-board="2" class="seat-btn">Join</button>
+                </div>
+                <div class="promo-row hidden" id="promoWrapBlack2">
+                  <span>Promotion</span>
+                  <select id="promoBlack2" class="promo-select" data-board="2" data-seat="black">
+                    <option value="q" selected>Queen</option>
+                    <option value="r">Rook</option>
+                    <option value="b">Bishop</option>
+                    <option value="n">Knight</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="game-right"></div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="side-panel">
+        <header class="title title-side">
+          <h1>Baby Chess</h1>
+        </header>
+        <div class="log">
+          <h2>Game Feed</h2>
+          <div id="log"></div>
+        </div>
+        <div class="chat">
+          <h2>Chat</h2>
+          <div id="chatMessages" class="chat-messages"></div>
+          <input
+            id="chatInput"
+            class="chat-input hidden"
+            type="text"
+            placeholder="Message"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+          />
+        </div>
+      </aside>
+    </main>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="/frontend/app.js"></script>
+  </body>
+</html>

@@ -1,6 +1,4 @@
-# baby chess
+# Baby Chess
 
-```
-web: gunicorn -k eventlet -w 1 app:app
-```
+Website to play Baby Chess (Bughouse), a 4-player fun chess variant.
 
