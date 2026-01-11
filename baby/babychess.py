@@ -1,5 +1,6 @@
 import asyncio
 import re
+from datetime import datetime
 import chess
 from baby.constants import ROOM_ID, SEATS, START_TIME_SEC
 
@@ -26,6 +27,7 @@ class GameState:
         self.abandon_task = None
         self.connected_clients = {}
         self.game_started = False
+        self.last_results = []
 
 state = GameState()
 
@@ -235,6 +237,7 @@ async def broadcast_state():
                 str(game_id): legal_drops_for_seat(game, seats.get(str(game_id)))
                 for game_id, game in state.games.items()
             },
+            "last_games": state.last_results,
         }
         await sio.emit("room_state", payload, to=sid)
 
@@ -295,13 +298,33 @@ async def end_game(game_id, result_type, winner_team):
         state.abandon_task.cancel()
         state.abandon_task = None
     winner_names = []
+    loser_names = []
+    loser_team = "red" if winner_team == "blue" else "blue" if winner_team else None
     if winner_team:
         for gid, gstate in state.games.items():
             for seat in SEATS:
-                if team_for(gid, seat) == winner_team:
+                team = team_for(gid, seat)
+                if team == winner_team:
                     name = gstate.seat_names.get(seat)
                     if name:
                         winner_names.append(name)
+                elif loser_team and team == loser_team:
+                    name = gstate.seat_names.get(seat)
+                    if name:
+                        loser_names.append(name)
+    state.last_results.insert(
+        0,
+        {
+            "board": game_id,
+            "winner_team": winner_team,
+            "winner_names": winner_names,
+            "loser_team": loser_team,
+            "loser_names": loser_names,
+            "date": datetime.now().strftime("%d.%m.%Y"),
+        },
+    )
+    if len(state.last_results) > 5:
+        state.last_results = state.last_results[:5]
     await sio.emit(
         "feed",
         {

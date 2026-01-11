@@ -21,7 +21,7 @@ body {
 
 .layout {
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 1fr 380px;
   gap: 24px;
   padding: 16px 40px 24px 48px;
   min-height: 100vh;
@@ -259,14 +259,16 @@ button:hover {
 }
 
 .log,
-.chat {
+.chat,
+.last-games {
   padding: 16px;
   border: 2px solid var(--ink);
   background: var(--panel);
 }
 
 .log h2,
-.chat h2 {
+.chat h2,
+.last-games h2 {
   margin: 0 0 6px;
 }
 
@@ -347,11 +349,15 @@ button:hover {
 
 
 #log {
-  height: 200px;
+  height: 120px;
   overflow-y: auto;
   border-top: 1px solid var(--ink);
   padding-top: 8px;
   font-size: 0.9rem;
+}
+
+#lastGames {
+  height: 140px;
 }
 
 .log-entry {

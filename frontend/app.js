@@ -12,6 +12,7 @@ const seatButtons = document.querySelectorAll(".seat-btn");
 const promoSelects = document.querySelectorAll(".promo-select");
 const chatMessages = document.getElementById("chatMessages");
 const chatInput = document.getElementById("chatInput");
+const lastGamesEl = document.getElementById("lastGames");
 
 const moveSound = new Audio("/assets/sounds/move.mp3");
 const captureSound = new Audio("/assets/sounds/capture.mp3");
@@ -190,6 +191,32 @@ function addChatMessage(username, message, team) {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+function renderLastGames(entries) {
+  if (!lastGamesEl) return;
+  lastGamesEl.innerHTML = "";
+  const items = Array.isArray(entries) ? entries : [];
+  items.forEach((item) => {
+    if (!item || !item.winner_team || !item.loser_team || !item.date) return;
+    const entry = document.createElement("div");
+    entry.className = "log-entry";
+    const winnerNames = Array.isArray(item.winner_names) ? item.winner_names : [];
+    const loserNames = Array.isArray(item.loser_names) ? item.loser_names : [];
+    const winnerNamesText = winnerNames.length ? winnerNames.join(", ") : "Unknown";
+    const loserNamesText = loserNames.length ? loserNames.join(", ") : "Unknown";
+    const winnerSpan = document.createElement("span");
+    winnerSpan.className = teamClass(item.winner_team);
+    winnerSpan.textContent = winnerNamesText;
+    entry.appendChild(winnerSpan);
+    entry.appendChild(document.createTextNode(" won against "));
+    const loserSpan = document.createElement("span");
+    loserSpan.className = teamClass(item.loser_team);
+    loserSpan.textContent = loserNamesText;
+    entry.appendChild(loserSpan);
+    entry.appendChild(document.createTextNode(` [${item.date}]`));
+    lastGamesEl.appendChild(entry);
+  });
+}
+
 function teamFor(boardId, seat) {
   if (boardId === 1 && seat === "white") return "blue";
   if (boardId === 2 && seat === "black") return "blue";
@@ -346,6 +373,7 @@ socket.on("room_state", (data) => {
   const legalMoves = data.legal_moves || {};
   const legalDrops = data.legal_drops || {};
   const bottomSeats = data.bottom_seats || {};
+  const lastGamesList = data.last_games || [];
   lastGames = games;
 
   Object.entries(games).forEach(([boardIdStr, game]) => {
@@ -405,6 +433,7 @@ socket.on("room_state", (data) => {
   chatInput.disabled = !hasSeat;
 
   updateCrossBoardCaptures(games);
+  renderLastGames(lastGamesList);
 });
 
 socket.on("move", (data) => {
