@@ -239,6 +239,7 @@ async def broadcast_state():
                 for game_id, game in state.games.items()
             },
             "last_games": state.last_results,
+            "start_time": START_TIME_SEC,
         }
         await sio.emit("room_state", payload, to=sid)
 

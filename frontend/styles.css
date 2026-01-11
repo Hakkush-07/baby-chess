@@ -139,11 +139,28 @@ body {
   justify-content: center;
   border: 2px solid var(--ink);
   background: var(--panel);
+  position: relative;
+  overflow: hidden;
   padding: 10px 12px;
   font-size: 1.4rem;
   font-weight: normal;
   width: 100%;
   max-width: 480px;
+}
+
+.timer-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #e0e0e0;
+  transform-origin: left;
+  transform: scaleX(var(--timer-fill, 1));
+  z-index: 0;
+}
+
+.timer-box span {
+  position: relative;
+  z-index: 1;
 }
 
 .timer-box.active {
@@ -228,7 +245,7 @@ body {
 }
 
 .game.result-blue .board::before {
-  content: "White Wins";
+  content: "Blue Wins";
   color: #1f6feb;
   opacity: 1;
   text-shadow: 0 2px 6px rgba(31, 111, 235, 0.2);

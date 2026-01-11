@@ -374,6 +374,7 @@ socket.on("room_state", (data) => {
   const legalDrops = data.legal_drops || {};
   const bottomSeats = data.bottom_seats || {};
   const lastGamesList = data.last_games || [];
+  const startTime = Number(data.start_time) || 1;
   lastGames = games;
 
   Object.entries(games).forEach(([boardIdStr, game]) => {
@@ -417,6 +418,10 @@ socket.on("room_state", (data) => {
     state.timerBoxBlackEl.classList.toggle("active", game.active_turn === "black");
     state.timerBoxWhiteEl.classList.toggle("low-time", game.timers.white < 15);
     state.timerBoxBlackEl.classList.toggle("low-time", game.timers.black < 15);
+    const whiteFill = Math.max(0, Math.min(1, game.timers.white / startTime));
+    const blackFill = Math.max(0, Math.min(1, game.timers.black / startTime));
+    state.timerBoxWhiteEl.style.setProperty("--timer-fill", whiteFill);
+    state.timerBoxBlackEl.style.setProperty("--timer-fill", blackFill);
 
     if (!state.yourSeat || state.yourSeat !== state.activeSeat) {
       clearSelection(boardId);
