@@ -380,6 +380,9 @@ socket.on("room_state", (data) => {
     const boardId = Number(boardIdStr);
     const state = boards[boardId];
     if (!state || !game) return;
+    const winnerTeam = Array.isArray(lastGamesList) && lastGamesList.length
+      ? lastGamesList[0].winner_team
+      : null;
 
     state.yourSeat = yourSeats[boardIdStr] || null;
     const nextBottomSeat = bottomSeats[boardIdStr] || (boardId === 1 ? "white" : "black");
@@ -388,6 +391,14 @@ socket.on("room_state", (data) => {
     state.lastBottomSeat = nextBottomSeat;
     if (state.gameEl) {
       state.gameEl.classList.toggle("flipped", state.bottomSeat !== state.baseBottomSeat);
+      state.gameEl.classList.toggle(
+        "result-blue",
+        Boolean(game.game_over && winnerTeam === "blue"),
+      );
+      state.gameEl.classList.toggle(
+        "result-red",
+        Boolean(game.game_over && winnerTeam === "red"),
+      );
     }
     state.activeSeat = game.active_turn || null;
     state.lastMove = game.last_move || null;
@@ -404,6 +415,8 @@ socket.on("room_state", (data) => {
     state.timerBlackEl.textContent = formatTime(game.timers.black);
     state.timerBoxWhiteEl.classList.toggle("active", game.active_turn === "white");
     state.timerBoxBlackEl.classList.toggle("active", game.active_turn === "black");
+    state.timerBoxWhiteEl.classList.toggle("low-time", game.timers.white < 15);
+    state.timerBoxBlackEl.classList.toggle("low-time", game.timers.black < 15);
 
     if (!state.yourSeat || state.yourSeat !== state.activeSeat) {
       clearSelection(boardId);

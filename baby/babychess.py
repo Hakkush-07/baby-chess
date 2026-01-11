@@ -137,6 +137,7 @@ def snapshot_game(board_id, game):
         "active_turn": game.active_turn,
         "running": game.running,
         "last_move": game.last_move,
+        "game_over": game.game_over,
     }
 
 def all_seats_empty():

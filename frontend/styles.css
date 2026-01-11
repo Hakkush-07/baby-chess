@@ -154,6 +154,10 @@ body {
   font-weight: bold;
 }
 
+.timer-box.low-time {
+  color: #b91c1c;
+}
+
 .captures {
   display: flex;
   flex-wrap: wrap;
@@ -188,8 +192,58 @@ body {
   aspect-ratio: 1 / 1;
   border: 6px solid var(--ink);
   background: var(--grid-light);
+  position: relative;
   width: 100%;
   max-width: 480px;
+}
+
+.board::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.board::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.game.result-blue .board::after {
+  background: rgba(31, 111, 235, 0.18);
+  opacity: 1;
+}
+
+.game.result-blue .board::before {
+  content: "White Wins";
+  color: #1f6feb;
+  opacity: 1;
+  text-shadow: 0 2px 6px rgba(31, 111, 235, 0.2);
+}
+
+.game.result-red .board::after {
+  background: rgba(185, 28, 28, 0.18);
+  opacity: 1;
+}
+
+.game.result-red .board::before {
+  content: "Red Wins";
+  color: #b91c1c;
+  opacity: 1;
+  text-shadow: 0 2px 6px rgba(185, 28, 28, 0.2);
 }
 
 .square {
