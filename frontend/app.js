@@ -13,6 +13,8 @@ const promoSelects = document.querySelectorAll(".promo-select");
 const chatMessages = document.getElementById("chatMessages");
 const chatInput = document.getElementById("chatInput");
 const lastGamesEl = document.getElementById("lastGames");
+const timeControlButtons = document.querySelectorAll(".time-btn");
+const timeControlsEl = document.querySelector(".time-controls");
 
 const moveSound = new Audio("/assets/sounds/move.mp3");
 const captureSound = new Audio("/assets/sounds/capture.mp3");
@@ -25,6 +27,8 @@ const gameStartSound = new Audio("/assets/sounds/game-start.mp3");
 const USERNAME_RE = /^[A-Za-z0-9]{1,16}$/;
 
 let lastGames = {};
+let activeTimeControl = { startTime: 180, increment: 2 };
+let hasSeat = false;
 
 const boards = {
   1: initBoardState(1),
@@ -374,8 +378,11 @@ socket.on("room_state", (data) => {
   const legalDrops = data.legal_drops || {};
   const bottomSeats = data.bottom_seats || {};
   const lastGamesList = data.last_games || [];
-  const startTime = Number(data.start_time) || 1;
+  const timeControl = data.time_control || {};
+  const startTime = Number(timeControl.start_time ?? data.start_time) || 1;
+  const increment = Number(timeControl.increment ?? data.increment) || 0;
   lastGames = games;
+  setActiveTimeControl(startTime, increment);
 
   Object.entries(games).forEach(([boardIdStr, game]) => {
     const boardId = Number(boardIdStr);
@@ -446,13 +453,29 @@ socket.on("room_state", (data) => {
     }
   });
 
-  const hasSeat = Object.values(boards).some((board) => board.yourSeat);
+  hasSeat = Object.values(boards).some((board) => board.yourSeat);
   chatInput.classList.toggle("hidden", !hasSeat);
   chatInput.disabled = !hasSeat;
+  if (timeControlsEl) {
+    timeControlsEl.classList.toggle("hidden", !hasSeat);
+  }
+  timeControlButtons.forEach((button) => {
+    button.disabled = !hasSeat;
+  });
 
   updateCrossBoardCaptures(games);
   renderLastGames(lastGamesList);
 });
+
+function setActiveTimeControl(startTime, increment) {
+  activeTimeControl = { startTime, increment };
+  timeControlButtons.forEach((button) => {
+    const buttonStart = Number(button.dataset.start);
+    const buttonIncrement = Number(button.dataset.increment);
+    const isActive = buttonStart === startTime && buttonIncrement === increment;
+    button.classList.toggle("active", isActive);
+  });
+}
 
 socket.on("move", (data) => {
   if (!data.from || !data.to) return;
@@ -536,6 +559,24 @@ socket.on("feed", (data) => {
   }
   if (data.kind === "start" && data.message) {
     addLog(data.message);
+    return;
+  }
+  if (data.kind === "time_control" && data.username && data.time_control) {
+    const entry = document.createElement("div");
+    entry.className = "log-entry";
+    if (data.team) {
+      const name = document.createElement("span");
+      name.className = teamClass(data.team);
+      name.textContent = `${data.username} `;
+      entry.appendChild(name);
+    } else {
+      entry.appendChild(document.createTextNode(`${data.username} `));
+    }
+    const suffix = data.next_game ? " for the next game" : "";
+    entry.appendChild(
+      document.createTextNode(`changed time control to ${data.time_control}${suffix}.`),
+    );
+    log.prepend(entry);
     return;
   }
   if (data.message) addLog(data.message);
@@ -658,6 +699,19 @@ promoSelects.forEach((select) => {
   select.addEventListener("change", () => {
     const boardId = Number(select.dataset.board);
     socket.emit("promotion_select", { board: boardId, choice: select.value });
+  });
+});
+
+timeControlButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    if (!hasSeat) return;
+    const startTime = Number(button.dataset.start);
+    const increment = Number(button.dataset.increment);
+    if (!Number.isFinite(startTime) || !Number.isFinite(increment)) {
+      return;
+    }
+    socket.emit("time_control", { start_time: startTime, increment });
+    setActiveTimeControl(startTime, increment);
   });
 });
 

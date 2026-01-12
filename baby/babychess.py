@@ -2,7 +2,7 @@ import asyncio
 import re
 from datetime import datetime
 import chess
-from baby.constants import ROOM_ID, SEATS, START_TIME_SEC
+from baby.constants import ROOM_ID, SEATS, START_TIME_SEC, INCREMENT_SEC
 
 class BoardState:
     def __init__(self):
@@ -28,6 +28,7 @@ class GameState:
         self.connected_clients = {}
         self.game_started = False
         self.last_results = []
+        self.time_control = {"start_time": START_TIME_SEC, "increment": INCREMENT_SEC}
 
 state = GameState()
 
@@ -239,7 +240,9 @@ async def broadcast_state():
                 for game_id, game in state.games.items()
             },
             "last_games": state.last_results,
-            "start_time": START_TIME_SEC,
+            "start_time": state.time_control.get("start_time", START_TIME_SEC),
+            "increment": state.time_control.get("increment", INCREMENT_SEC),
+            "time_control": state.time_control,
         }
         await sio.emit("room_state", payload, to=sid)
 
@@ -269,9 +272,10 @@ async def reset_all_games():
         state.abandon_task.cancel()
         state.abandon_task = None
     state.game_started = False
+    start_time = state.time_control.get("start_time", START_TIME_SEC)
     for game_id, game in state.games.items():
         game.board = chess.Board()
-        game.timers = {"white": START_TIME_SEC, "black": START_TIME_SEC}
+        game.timers = {"white": start_time, "black": start_time}
         game.active_turn = "white"
         game.running = False
         game.last_move = None

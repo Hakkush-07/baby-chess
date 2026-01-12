@@ -51,7 +51,7 @@ body {
 }
 
 .title-side h1 {
-  margin: 0 0 12px;
+  margin: 0 0 6px;
   font-size: 1.8rem;
 }
 
@@ -322,6 +322,30 @@ button:hover {
   transform: translateY(-1px);
 }
 
+.time-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.time-btn {
+  background: #f5efe4;
+  color: var(--ink);
+}
+
+.time-btn:hover {
+  background: #efe3d2;
+}
+
+.time-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.time-btn.active:hover {
+  background: var(--accent-dark);
+}
+
 .side-panel {
   display: flex;
   flex-direction: column;
@@ -337,11 +361,18 @@ button:hover {
   background: var(--panel);
 }
 
+.time-controls {
+  padding: 16px;
+  border: 2px solid var(--ink);
+  background: var(--panel);
+}
+
 .log h2,
 .chat h2,
 .last-games h2 {
   margin: 0 0 6px;
 }
+
 
 .log .log-entry,
 .chat .chat-entry {
@@ -349,7 +380,7 @@ button:hover {
 }
 
 .chat-messages {
-  height: 200px;
+  height: 160px;
   overflow-y: auto;
   border-top: 1px solid var(--ink);
   padding-top: 8px;
@@ -420,7 +451,7 @@ button:hover {
 
 
 #log {
-  height: 120px;
+  height: 100px;
   overflow-y: auto;
   border-top: 1px solid var(--ink);
   padding-top: 8px;
@@ -428,7 +459,7 @@ button:hover {
 }
 
 #lastGames {
-  height: 140px;
+  height: 100px;
 }
 
 .log-entry {

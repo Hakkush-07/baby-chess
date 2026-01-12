@@ -1,6 +1,6 @@
 import chess
 
-from baby.constants import INCREMENT_SEC, ROOM_ID, SEATS
+from baby.constants import ROOM_ID, SEATS
 from baby.babychess import *
 
 def register_socket_handlers(sio):
@@ -155,15 +155,20 @@ def register_socket_handlers(sio):
                 return
             if not game.active_turn:
                 game.active_turn = "white"
-            game.running = True
             if not state.game_started:
                 state.game_started = True
+                for other_game in state.games.values():
+                    other_game.running = True
+                    if not other_game.active_turn:
+                        other_game.active_turn = "white"
                 await sio.emit("game_start", {}, room=ROOM_ID)
                 await sio.emit(
                     "feed",
                     {"kind": "start", "message": "Game has started."},
                     room=ROOM_ID,
                 )
+            else:
+                game.running = True
         if seat != game.active_turn:
             return
         if seat == "white" and game.board.turn != chess.WHITE:
@@ -222,7 +227,8 @@ def register_socket_handlers(sio):
                 "from": {"row": tr, "col": tc},
                 "to": {"row": tr, "col": tc},
             }
-            game.timers[seat] += INCREMENT_SEC
+            increment = int(state.time_control.get("increment", 0))
+            game.timers[seat] += increment
             game.active_turn = "white" if game.board.turn == chess.WHITE else "black"
             await sio.emit(
                 "move",
@@ -317,7 +323,8 @@ def register_socket_handlers(sio):
                 piece_letter = captured_piece.symbol().upper()
             pool_board_id, pool_seat = team_pool_target(board_id, seat)
             add_to_pool(pool_board_id, pool_seat, piece_letter)
-        game.timers[seat] += INCREMENT_SEC
+        increment = int(state.time_control.get("increment", 0))
+        game.timers[seat] += increment
         game.active_turn = "white" if game.board.turn == chess.WHITE else "black"
         await sio.emit(
             "move",
@@ -358,6 +365,65 @@ def register_socket_handlers(sio):
         if game.board.can_claim_threefold_repetition():
             await end_game(board_id, "Draw by repetition", None)
             return
+        await broadcast_state()
+
+    @sio.event
+    async def time_control(sid, data):
+        session = await sio.get_session(sid)
+        client_id = session.get("client_id")
+        if not client_id:
+            return
+        has_seat = any(
+            seat_for_client(game, client_id) in SEATS for game in state.games.values()
+        )
+        if not has_seat:
+            return
+        start_time = data.get("start_time")
+        increment = data.get("increment")
+        try:
+            start_time = int(start_time)
+            increment = int(increment)
+        except (TypeError, ValueError):
+            return
+        allowed = {(180, 0), (180, 2), (300, 0), (300, 3)}
+        if (start_time, increment) not in allowed:
+            return
+        state.time_control = {"start_time": start_time, "increment": increment}
+        player_name = None
+        player_team = None
+        for game_id, game in state.games.items():
+            seat = seat_for_client(game, client_id)
+            if seat:
+                player_team = team_for(game_id, seat)
+                player_name = game.seat_names.get(seat) or seat.title()
+                break
+        time_label = f"{start_time // 60}+{increment}"
+        if not any_game_running():
+            for game in state.games.values():
+                game.timers = {"white": start_time, "black": start_time}
+            await sio.emit(
+                "feed",
+                {
+                    "kind": "time_control",
+                    "username": player_name or "Player",
+                    "team": player_team,
+                    "time_control": time_label,
+                    "next_game": False,
+                },
+                room=ROOM_ID,
+            )
+        else:
+            await sio.emit(
+                "feed",
+                {
+                    "kind": "time_control",
+                    "username": player_name or "Player",
+                    "team": player_team,
+                    "time_control": time_label,
+                    "next_game": True,
+                },
+                room=ROOM_ID,
+            )
         await broadcast_state()
 
     @sio.event
